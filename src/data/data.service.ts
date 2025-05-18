@@ -1,19 +1,42 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { CompanyProfile } from './entities/company-profile.entity';
-import { Repository } from 'typeorm';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { RetrieveDatumDto } from './dto/retrieve-datum.dto';
+import { RuleEngineService } from './engine-services/rule-engine.service';
+import { DynamicRepositoryService } from './repository/dynamic-repository.service';
+import { DataQueryService } from './queries/data-query.service';
 
 @Injectable()
 export class DataService {
   constructor(
-    @InjectRepository(CompanyProfile)
-    private readonly companyProfileRepository: Repository<CompanyProfile>,
+    private readonly ruleEngineService: RuleEngineService,
+    private readonly repositoryService: DynamicRepositoryService,
+    private readonly queryService: DataQueryService,
   ) {}
 
-  findData(retrieveModel: RetrieveDatumDto): Promise<CompanyProfile> {
-    return this.companyProfileRepository.findOne({
-      where: { ticker: retrieveModel.companyTickerName },
-    });
+  async findData(retrieveModel: RetrieveDatumDto): Promise<any> {
+    const { tableClass, events } =
+      await this.ruleEngineService.determineTableClass(
+        retrieveModel.table,
+        retrieveModel.dataPoint,
+      );
+
+    if (events.length !== 1) {
+      throw new BadRequestException(
+        `An internal error occurred during table selection. Expected 1 event, but got ${events.length}.`,
+      );
+    }
+
+    if (!tableClass) {
+      throw new NotFoundException(
+        `Invalid table/column combination: table='${retrieveModel.table}', column='${retrieveModel.dataPoint}'.`,
+      );
+    }
+
+    const repository = this.repositoryService.getRepositoryForClass(tableClass);
+
+    return this.queryService.executeQuery(repository, retrieveModel);
   }
 }

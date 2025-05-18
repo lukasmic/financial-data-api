@@ -8,5 +8,5 @@ export class RetrieveDatumDto {
   dataPoint: string;
 
   @ApiProperty()
-  tableName: string;
+  table: string;
 }

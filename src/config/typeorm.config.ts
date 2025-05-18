@@ -7,6 +7,5 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
   username: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASS || 'root',
   database: process.env.DB_NAME || 'postgres',
-  //   entities: [__dirname + '/../**/*.entity.{js,ts}'],
   autoLoadEntities: true,
 };

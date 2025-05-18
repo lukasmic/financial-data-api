@@ -7,15 +7,15 @@ export class DataController {
   constructor(private readonly dataService: DataService) {}
 
   @Get(':table')
-  findOne(
-    @Param('tableName') tableName: string,
+  async findOne(
+    @Param('table') table: string,
     @Query('dataPointName') dataPoint: string,
     @Query('tickerName') ticker: string,
-  ) {
+  ): Promise<any> {
     const retrieveModel: RetrieveDatumDto = {
       companyTickerName: ticker,
       dataPoint: dataPoint,
-      tableName: tableName,
+      table: table,
     };
 
     return this.dataService.findData(retrieveModel);

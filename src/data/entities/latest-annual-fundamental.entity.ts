@@ -6,13 +6,13 @@ export class LatestAnnualFundamental {
   ticker: string;
 
   @Column({ type: 'int', nullable: false })
-  latestYear: number;
+  latestyear: number;
 
   @Column({ type: 'numeric', precision: 18, scale: 2, nullable: true })
   revenue: number | null;
 
   @Column({ type: 'numeric', precision: 18, scale: 2, nullable: true })
-  netIncome: number | null;
+  netincome: number | null;
 
   @Column({ type: 'numeric', precision: 10, scale: 2, nullable: true })
   eps: number | null;

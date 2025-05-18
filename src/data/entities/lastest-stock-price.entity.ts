@@ -1,7 +1,7 @@
 import { Entity, PrimaryColumn, Column } from 'typeorm';
 
 @Entity('latest_stock_prices')
-export class LatestPrices {
+export class LatestStockPrice {
   @PrimaryColumn({ type: 'varchar', length: 10 })
   ticker: string;
 

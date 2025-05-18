@@ -1,98 +1,56 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Financial data REST API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Demo REST API using `NestJS` to infer financial data table and column set from a rules engine using `json-rules-engine` and queried using `TypeORM`.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Swagger added for API documentation. By default it will be reachable in http://localhost:3000/api.
 
-## Description
+## Extra setup
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+The app uses PostgreSQL database with default parameters defined in `.env` file.
+Some example tables to query using this application were AI-generated using the following `psql` scripts:
 
-## Project setup
+```psql
+CREATE TABLE company_profiles (
+    ticker VARCHAR(10) PRIMARY KEY, -- Company stock ticker symbol (e.g., 'AAPL', 'GOOGL')
+    companyName VARCHAR(255) NOT NULL, -- Full legal company name
+    sector VARCHAR(100),            -- Industry sector (can be NULL)
+    industry VARCHAR(100),          -- Specific industry (can be NULL)
+    country VARCHAR(50)             -- Country of headquarters (can be NULL)
+);
 
-```bash
-$ npm install
+CREATE TABLE latest_stock_prices (
+    ticker VARCHAR(10) PRIMARY KEY, -- Company stock ticker symbol (Primary Key)
+    price NUMERIC(10, 2) NOT NULL,  -- Latest closing or last traded price
+    timestamp TIMESTAMP WITH TIME ZONE NOT NULL, -- Timestamp of the latest price
+    volume BIGINT                     -- Latest trading volume (can be NULL)
+);
+
+CREATE TABLE latest_annual_fundamentals (
+    ticker VARCHAR(10) PRIMARY KEY, -- Company stock ticker symbol (Primary Key)
+    latestYear INT NOT NULL,        -- The fiscal year of the latest annual report stored
+    revenue NUMERIC(18, 2),         -- Total revenue for the latest year (can be NULL)
+    netIncome NUMERIC(18, 2),       -- Net income for the latest year (can be NULL)
+    eps NUMERIC(10, 2)              -- Earnings per share for the latest year (can be NULL)
+);
+
+INSERT INTO company_profiles (ticker, companyName, sector, industry, country) VALUES
+('AAPL', 'Apple Inc.', 'Technology', 'Consumer Electronics', 'United States'),
+('GOOGL', 'Alphabet Inc.', 'Technology', 'Internet Content & Services', 'United States'),
+('MSFT', 'Microsoft Corporation', 'Technology', 'Software - Infrastructure', 'United States'),
+('AMZN', 'Amazon.com, Inc.', 'Consumer Discretionary', 'Internet Retail', 'United States'),
+('TSLA', 'Tesla, Inc.', 'Consumer Discretionary', 'Auto Manufacturers', 'United States');
+
+INSERT INTO latest_annual_fundamentals (ticker, latestYear, revenue, netIncome, eps) VALUES
+('AAPL', 2024, 387536000000.00, 101936000000.00, 6.21),
+('GOOGL', 2024, 311046000000.00, 86980000000.00, 5.95),
+('MSFT', 2024, 240110000000.00, 74307000000.00, 9.98),
+('AMZN', 2024, 574785000000.00, 37000000000.00, 3.50), -- Note: AMZN's net income can fluctuate
+('TSLA', 2024, 105000000000.00, 15000000000.00, 4.50); -- Hypothetical data
+
+INSERT INTO latest_stock_prices (ticker, price, timestamp, volume) VALUES
+('AAPL', 175.85, '2025-05-17 16:00:00+00', 75123456),
+('GOOGL', 159.40, '2025-05-17 16:00:00+00', 45678901),
+('MSFT', 426.10, '2025-05-17 16:00:00+00', 55789123),
+('AMZN', 185.50, '2025-05-17 16:00:00+00', 68901234),
+('TSLA', 178.90, '2025-05-17 16:00:00+00', 120345678);
 ```
-
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
